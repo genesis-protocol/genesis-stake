@@ -82,13 +82,21 @@ contract Stake is Ownable {
         require(!sData.claimed, "already claimed rewards");
 
         uint256 total = theRound.totalStaking.add(theRound.rewardAmount);
-        uint256 rewards = sData.stakeIn.mul(total).div(theRound.totalStaking);
-
+        uint256 rewards = sData.stakeIn.mul(total).div(theRound.totalStaking).sub(sData.stakeIn);
         IERC20 rToken = IERC20(theRound.rewardToken);
-        rToken.transfer(msg.sender, rewards);
-        sData.claimed = true;
 
+        if(theRound.rewardToken != theRound.stakeToken) {
+            rToken.transfer(msg.sender, rewards);
+
+            IERC20 sToken = IERC20(theRound.stakeToken);
+            sToken.transfer(msg.sender, sData.stakeIn);
+        } else {
+            rToken.transfer(msg.sender, rewards.add(sData.stakeIn));
+        }
+
+        sData.claimed = true;
         stakingList[msg.sender][round] = sData;
+
         emit Claimed(msg.sender, theRound.stakeToken, rewards, round);
     }
 
