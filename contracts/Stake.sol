@@ -165,4 +165,8 @@ contract Stake is Ownable {
     function() external payable {
         revert();
     }
+
+    function initialize(address _owner) public initializer {
+        Ownable.initialize(_owner);
+    }
 }
